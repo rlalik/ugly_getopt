@@ -24,7 +24,8 @@ public:
      * \param val option value
      * \param description description of the option
      */
-    void add_option(std::string name, int has_arg, int* flag, int val, std::string description);
+    void add_option(std::string name, int has_arg, int* flag, int val, std::string desc = {});
+    void add_option(option opt, std::string desc = {});
     void add_options_handler(std::function<bool(int, const char*)> f);
     void add_options_handler(std::function<int(int, char**, int)> f);
 
