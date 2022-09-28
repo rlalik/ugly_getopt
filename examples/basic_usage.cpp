@@ -4,10 +4,10 @@ struct some
 {
     some(ugly_getopt& ugly)
     {
-        ugly.add_option("some", no_argument, &flag_some, 1, "Some flag");
-        ugly.add_option("action1", optional_argument, 0, 10, "Action 1");
+        ugly.add_option("some", no_argument, &flag_some, 1, "Some flag", "flag");
+        ugly.add_option("action1", optional_argument, 0, 'a', "Action 1", "action");
         ugly.add_option("action2", optional_argument, 0, 20, "Action 2");
-        ugly.add_option("action3", required_argument, 0, 30, "Action 3");
+        ugly.add_option("action3", required_argument, 0, 30, "Action 3", "action");
 
         ugly.add_options_handler(
             std::bind(&some::config_handler, this, std::placeholders::_1, std::placeholders::_2));
@@ -48,4 +48,5 @@ int main(int argc, char** argv)
     some s(ugly);
 
     ugly.configure(argc, argv);
+    ugly.usage(argc, argv);
 }

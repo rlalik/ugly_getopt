@@ -24,19 +24,26 @@ public:
      * \param val option value
      * \param description description of the option
      */
-    void add_option(std::string name, int has_arg, int* flag, int val, std::string desc = {});
-    void add_option(option opt, std::string desc = {});
+    void add_option(std::string name, int has_arg, int* flag, int val, std::string opt_desc = {},
+                    std::string val_desc = "value");
+    void add_option(option opt, std::string opt_desc = {}, std::string val_desc = "value");
     void add_options_handler(std::function<bool(int, const char*)> f);
     void add_options_handler(std::function<int(int, char**, int)> f);
 
-    int configure(int argc, char** argv);
+    auto configure(int argc, char** argv) -> int;
+    void usage(int argc, char** argv);
 
 private:
     size_t s_lo;
 
+    struct full_option
+    {
+        option opt;           // gnu option
+        std::string val_desc; // describe value kind
+        std::string opt_desc; // describe option
+    };
     std::vector<std::unique_ptr<char[]>> cmdl_names;
-    std::vector<option> cmdl_options;
-    std::vector<std::string> cmdl_options_descriptions;
+    std::vector<full_option> cmdl_options;
     std::vector<std::function<bool(int, const char*)>> cmdl_options_handlers;
     std::function<int(int, char**, int)> cmdl_arguments_handler;
 };
