@@ -9,61 +9,44 @@
 #include <sstream>
 #include <stdexcept>
 
-void ugly_getopt::add_option(option opts, std::string opt_desc, std::string val_desc)
-{
-    cmdl_options.push_back({opts, std::move(val_desc), std::move(opt_desc)});
-}
-
 void ugly_getopt::add_option(std::string name, int has_arg, int* flag, int value,
-                             std::string opt_desc, std::string val_desc)
+                             option_handler handler, std::string opt_desc, std::string val_desc)
 {
-    std::unique_ptr<char[]> name_copy(new char[name.length() + 1]);
-    std::strncpy(name_copy.get(), name.c_str(), name.length() + 1);
-
-    cmdl_options.push_back(
-        {{name_copy.get(), has_arg, flag, value}, std::move(val_desc), std::move(opt_desc)});
-
-    cmdl_names.push_back(std::move(name_copy));
+    cmdl_options.insert({value,
+                         {std::move(name), has_arg, flag, value, std::move(handler),
+                          std::move(val_desc), std::move(opt_desc)}});
 }
 
-void ugly_getopt::add_options_handler(std::function<bool(int, const char*)> f)
+int ugly_getopt::configure(int argc, char* const* argv)
 {
-    cmdl_options_handlers.push_back(std::move(f));
-}
-
-auto ugly_getopt::add_options_handler(std::function<int(int, char**, int)> f) -> void
-{
-    if (cmdl_arguments_handler) throw std::runtime_error("Arguments handler already set");
-
-    cmdl_arguments_handler = std::move(f);
-}
-
-int ugly_getopt::configure(int argc, char** argv)
-{
-    std::vector<option> tmp_options;
     std::stringstream short_opts;
 
-    for (auto& cmd : cmdl_options)
-    {
-        tmp_options.push_back(cmd.opt);
-        if (cmd.opt.val > 0 and cmd.opt.val < std::numeric_limits<char>::max())
-        {
-            short_opts << static_cast<char>(cmd.opt.val);
+    const auto s = cmdl_options.size();
+    option long_options[s + 1];
 
-            if (cmd.opt.has_arg == optional_argument or cmd.opt.has_arg == required_argument)
-                short_opts << ':';
+    int cnt = 0;
+    for (auto& opt : cmdl_options)
+    {
+        auto& cmd = opt.second;
+
+        long_options[cnt++] = {cmd.name.c_str(), cmd.has_arg, cmd.flag, cmd.val};
+        if (cmd.val > 0 and cmd.val < std::numeric_limits<char>::max())
+        {
+            short_opts << static_cast<char>(cmd.val);
+
+            if (cmd.has_arg == required_argument) short_opts << ':';
+            if (cmd.has_arg == optional_argument) short_opts << "::";
         }
     }
-    tmp_options.push_back({0, 0, 0, 0});
-
-    option* long_options = tmp_options.data();
+    long_options[cnt] = {0, 0, 0, 0};
 
     int c = 0;
     while (1)
     {
         int option_index = 0;
 
-        c = getopt_long(argc, argv, short_opts.str().c_str(), long_options, &option_index);
+        c = getopt_long(argc, argv, short_opts.str().c_str(), &long_options[0], &option_index);
+
         if (c == -1) break;
 
         if (c == 0)
@@ -76,19 +59,22 @@ int ugly_getopt::configure(int argc, char** argv)
             continue;
         }
 
-        bool ret = false;
-        for (auto f : cmdl_options_handlers)
-        {
-            ret = f(c, optarg);
-            if (ret) break;
-        }
-
-        if (!ret)
+        auto it = cmdl_options.find(c);
+        if (it != cmdl_options.end()) { it->second.handler(c, optarg); }
+        else
             std::cerr << "ERROR: Argument '" << long_options[option_index].name
                       << "' not handled\n";
     }
 
-    if (cmdl_arguments_handler) return cmdl_arguments_handler(argc, argv, optind);
+    if (optind < argc and cmdl_multiple_handler)
+    {
+        return cmdl_multiple_handler(argc, argv, optind);
+    }
+    if (optind < argc and cmdl_arguments_handler)
+    {
+        while (optind < argc)
+            return cmdl_arguments_handler(argv[optind++]);
+    }
 
     return optind;
 }
@@ -115,19 +101,20 @@ void ugly_getopt::usage(int argc, char** argv)
 
     size_t max_width = 0;
 
-    for (auto& cmd : cmdl_options)
+    for (auto& opt : cmdl_options)
     {
+        auto& cmd = opt.second;
         int has_flags = 0x00;
-        size_t len = std::strlen(cmd.opt.name);
+        size_t len = cmd.name.size();
         size_t val_desc_len = 0;
 
-        if (std::isalpha(cmd.opt.val)) { has_flags |= 0x01; }
+        if (std::isalpha(cmd.val)) { has_flags |= 0x01; }
 
-        if (cmd.opt.has_arg != no_argument)
+        if (cmd.has_arg != no_argument)
         {
             val_desc_len = cmd.val_desc.length() + 2; // include '[]'
             has_flags |= 0x02;
-            if (cmd.opt.has_arg == optional_argument) has_flags |= 0x10;
+            if (cmd.has_arg == optional_argument) has_flags |= 0x10;
         }
 
         switch (has_flags & 0xf)
@@ -149,10 +136,10 @@ void ugly_getopt::usage(int argc, char** argv)
         }
         max_width = std::max(max_width, len);
 
-        if (std::isalpha(cmd.opt.val))
-            names.push_back({cmd.opt.val, cmd.opt.name, cmd.val_desc, cmd.opt_desc, has_flags});
+        if (std::isalpha(cmd.val))
+            names.push_back({cmd.val, cmd.name, cmd.val_desc, cmd.opt_desc, has_flags});
         else
-            names.push_back({0, cmd.opt.name, cmd.val_desc, cmd.opt_desc, has_flags});
+            names.push_back({0, cmd.name, cmd.val_desc, cmd.opt_desc, has_flags});
     }
 
     sort_options<full_desc> so;

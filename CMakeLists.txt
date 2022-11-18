@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 project(ugly_getopt
-    VERSION 0.0.3
+    VERSION 0.0.4
     LANGUAGES C CXX
 )
 
@@ -141,8 +141,8 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/ugly_getoptConfig.cmake
 add_subdirectory(examples)
 
 # tests
-# enable_testing()
-# add_subdirectory(tests)
+enable_testing()
+add_subdirectory(tests)
 
 # messages
 message(
