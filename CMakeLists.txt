@@ -1,8 +1,10 @@
 cmake_minimum_required(VERSION 3.16)
-project(ugly_getopt
-    VERSION 0.0.4
-    LANGUAGES C CXX
-)
+project(
+  ugly_getopt
+  VERSION 0.0.5
+  LANGUAGES C CXX)
+
+option(UGLY_ENABLE_TESTING "Enable tests" OFF)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
@@ -36,10 +38,8 @@ set_target_properties(
              PUBLIC_HEADER "ugly_getopt.h")
 
 target_include_directories(
-  ugly_getopt
-  INTERFACE
-          "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
-          "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>")
+  ugly_getopt INTERFACE "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+                        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>")
 
 # installing
 
@@ -67,11 +67,10 @@ install(
   FILE "ugly_getopt-targets.cmake"
   COMPONENT Development)
 
-# generate the export targets for the build tree
-# needs to be after the install(TARGETS ) command
+# generate the export targets for the build tree needs to be after the
+# install(TARGETS ) command
 export(EXPORT ugly_getopt_Targets
-  FILE "${CMAKE_CURRENT_BINARY_DIR}/ugly_getopt-targets.cmake"
-)
+       FILE "${CMAKE_CURRENT_BINARY_DIR}/ugly_getopt-targets.cmake")
 
 include(CMakePackageConfigHelpers)
 
@@ -90,8 +89,10 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/ugly_getoptConfig.cmake
 add_subdirectory(examples)
 
 # tests
-enable_testing()
-add_subdirectory(tests)
+if(UGLY_ENABLE_TESTING)
+  enable_testing()
+  add_subdirectory(tests)
+endif()
 
 # messages
 message(
