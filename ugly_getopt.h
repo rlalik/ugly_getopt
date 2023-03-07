@@ -24,7 +24,7 @@ public:
     using arguments_handler = std::function<bool(const char*)>;
     using multiple_arguments_handler = std::function<bool(int, char* const*, int)>;
 
-    void usage(char** argv);
+    inline auto usage(char** argv) -> void;
 
     /**
      * Add command line option. See getopt long option example.
@@ -34,13 +34,13 @@ public:
      * \param val option value
      * \param description description of the option
      */
-    void add_option(std::string name, int has_arg, int* flag, int val, option_handler handler,
-                    std::string opt_desc = {}, std::string val_desc = "value");
-    void add_arguments_handler(arguments_handler f) { cmdl_arguments_handler = f; }
-    void add_multiple_arguments_handler(multiple_arguments_handler f) { cmdl_multiple_handler = f; }
+    inline auto add_option(std::string name, int has_arg, int* flag, int val, option_handler handler,
+                    std::string opt_desc = {}, std::string val_desc = "value") -> void;
+    inline auto add_arguments_handler(arguments_handler f) -> void { cmdl_arguments_handler = f; }
+    inline auto add_multiple_arguments_handler(multiple_arguments_handler f) -> void { cmdl_multiple_handler = f; }
 
-    auto configure(int argc, char* const* argv) -> int;
-    void usage(int argc, char** argv);
+    inline auto configure(int argc, char* const* argv) -> int;
+    inline auto usage(int argc, char** argv) -> void;
 
 private:
     struct full_option
