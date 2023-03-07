@@ -1,0 +1,70 @@
+# This is a basic workflow to help you get started with Actions
+name: Compiler and standards checks
+
+# Controls when the action will run. Triggers the workflow on push
+on:
+  push:
+  pull_request:
+  release:
+    # tags:
+    # - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    name: "${{ matrix.compiler }} ${{ matrix.cxx_standard }} CMake: ${{ matrix.cmake-version }}"
+    runs-on: ${{ matrix.os-version }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os-version: [ ubuntu-latest ]
+        build_type: [ Release ]
+        cxx_standard: [ 11, 14, 17, 20 ]
+        compiler: [ gcc-latest, clang-latest ]
+        cmake-version: [ "", "3.13" ]
+
+    steps:
+      - name: Print env
+        run: |
+          echo github.event.action: ${{ github.event.action }}
+          echo github.event_name: ${{ github.event_name }}
+
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: Checkout repository
+        uses: actions/checkout@v1
+        with:
+          submodules: recursive
+
+      - name: Setup CMake
+        uses: jwlawson/actions-setup-cmake@v1.9
+        with:
+          cmake-version: ${{ matrix.cmake-version }}
+
+      - name: Install compiler
+        id: install_cc
+        uses: rlalik/setup-cpp-compiler@master
+        with:
+          compiler: ${{ matrix.compiler }}
+
+      - name: Configure
+        shell: bash
+        run: |
+          cmake \
+            -S . \
+            -B build \
+            -DUGLY_ENABLE_TESTING=On \
+            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+            -DCMAKE_INSTALL_PREFIX:PATH=instdir \
+            -DCMAKE_CXX_STANDARD=${{ matrix.cxx_standard }}
+            ${{ matrix.root-version.cmake_args }}
+
+      - name: Build
+        shell: bash
+        run: cmake --build build --config ${{ matrix.build_type }}
+
+      - name: Test
+        shell: bash
+        run: cmake --build build --target test

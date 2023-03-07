@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.13)
 project(
   ugly_getopt
   VERSION 0.0.5
@@ -20,7 +20,16 @@ FetchContent_Declare(
   GIT_REPOSITORY https://github.com/rlalik/cmake_tools
   GIT_TAG master)
 
-FetchContent_MakeAvailable(cmake_tools)
+if(CMAKE_VERSION VERSION_LESS 3.14)
+  FetchContent_GetProperties(cmake_tools)
+  if(NOT cmake_tools_POPULATED)
+    FetchContent_Populate(cmake_tools)
+    add_subdirectory(${cmake_tools_SOURCE_DIR} ${cmake_tools_BINARY_DIR})
+  endif()
+else()
+  FetchContent_MakeAvailable(cmake_tools)
+endif()
+
 list(APPEND CMAKE_MODULE_PATH ${cmake_tools_SOURCE_DIR})
 include(check_3rd_party_tool)
 

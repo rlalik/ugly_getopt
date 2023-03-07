@@ -103,7 +103,8 @@ ugly_getopt::full_option& ugly_getopt::add_option(std::string name, int has_arg,
 ugly_getopt::full_option& ugly_getopt::get_option(std::string name)
 {
     auto result = std::find_if(cmdl_options.begin(), cmdl_options.end(),
-                               [name](auto& opt) { return opt.second.name == name; });
+                               [name](const std::pair<int, full_option>& opt)
+                               { return opt.second.name == name; });
 
     if (result != cmdl_options.end()) return result->second;
 
