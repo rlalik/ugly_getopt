@@ -8,12 +8,19 @@ FetchContent_Declare(
   GIT_REPOSITORY https://github.com/rlalik/cmake_tools
   GIT_TAG master)
 
-FetchContent_MakeAvailable(cmake_tools)
+# FetchContent_MakeAvailable requires CMake-3.14 or newer
+if(CMAKE_VERSION VERSION_LESS 3.14)
+  FetchContent_GetProperties(cmake_tools)
+  if(NOT cmake_tools_POPULATED)
+    FetchContent_Populate(cmake_tools)
+  endif()
+else()
+  FetchContent_MakeAvailable(cmake_tools)
+endif()
 list(APPEND CMAKE_MODULE_PATH ${cmake_tools_SOURCE_DIR})
 include(find_or_fetch_package)
 
 find_or_fetch_package(cmake-scripts https://github.com/StableCoder/cmake-scripts GIT_TAG main AUTO)
-include(GoogleTest)
 list(APPEND CMAKE_MODULE_PATH ${cmake-scripts_SOURCE_DIR})
 
 # include(c++-standards)

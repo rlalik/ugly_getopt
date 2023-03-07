@@ -56,6 +56,7 @@ jobs:
             -S . \
             -B build \
             -DUGLY_ENABLE_TESTING=On \
+            -DUGLY_BUILD_EXAMPLES=On \
             -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
             -DCMAKE_INSTALL_PREFIX:PATH=instdir \
             -DCMAKE_CXX_STANDARD=${{ matrix.cxx_standard }}

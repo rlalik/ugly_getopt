@@ -5,6 +5,7 @@ project(
   LANGUAGES C CXX)
 
 option(UGLY_ENABLE_TESTING "Enable tests" OFF)
+option(UGLY_BUILD_EXAMPLES "Build examples" OFF)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
@@ -16,11 +17,19 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 add_library(ugly_getopt INTERFACE)
 add_library(ugly_getopt::ugly_getopt ALIAS ugly_getopt)
 
-set_target_properties(
-  ugly_getopt
-  PROPERTIES VERSION ${PROJECT_VERSION}
-             SOVERSION ${PROJECT_VERSION_MAJOR}
-             PUBLIC_HEADER "ugly_getopt.h")
+if(CMAKE_VERSION VERSION_LESS 3.14)
+  set_target_properties(
+    ugly_getopt
+    PROPERTIES INTERFACE_VERSION ${PROJECT_VERSION}
+              INTERFACE_SOVERSION ${PROJECT_VERSION_MAJOR}
+              INTERFACE_PUBLIC_HEADER "ugly_getopt.h")
+else()
+  set_target_properties(
+    ugly_getopt
+    PROPERTIES VERSION ${PROJECT_VERSION}
+              SOVERSION ${PROJECT_VERSION_MAJOR}
+              PUBLIC_HEADER "ugly_getopt.h")
+endif()
 
 target_include_directories(
   ugly_getopt INTERFACE "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
@@ -71,7 +80,9 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/ugly_getoptConfig.cmake
               ${CMAKE_CURRENT_BINARY_DIR}/ugly_getoptConfigVersion.cmake
         DESTINATION ${ugly_getopt_INSTALL_CMAKEDIR})
 
-add_subdirectory(examples)
+if (UGLY_BUILD_EXAMPLES)
+  add_subdirectory(examples)
+endif()
 
 # tests
 if(UGLY_ENABLE_TESTING)
