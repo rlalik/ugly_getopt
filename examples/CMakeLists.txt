@@ -1,10 +1,21 @@
+# ==============================================================================
+# fetch external content
+include(FetchContent)
 # ------------------------------------------------------------------------------
-# cmake - scripts
-check_3rd_party_tool(
-  cmake-scripts 9999 https://github.com/StableCoder/cmake-scripts TAG
-  774a07ece3945b4f72e3ddc11646ab7cc9a349e2 AUTO)
+# cmake_tools
+FetchContent_Declare(
+  cmake_tools
+  GIT_REPOSITORY https://github.com/rlalik/cmake_tools
+  GIT_TAG master)
 
+FetchContent_MakeAvailable(cmake_tools)
+list(APPEND CMAKE_MODULE_PATH ${cmake_tools_SOURCE_DIR})
+include(find_or_fetch_package)
+
+find_or_fetch_package(cmake-scripts https://github.com/StableCoder/cmake-scripts GIT_TAG main AUTO)
+include(GoogleTest)
 list(APPEND CMAKE_MODULE_PATH ${cmake-scripts_SOURCE_DIR})
+
 # include(c++-standards)
 include(code-coverage)
 include(sanitizers)

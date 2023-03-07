@@ -1,10 +1,21 @@
 find_package(GTest)
 
-if(NOT GTest_FOUND)
-  message(STATUS "Add GoogleTest from github")
-  check_3rd_party_tool(googletest 9999 https://github.com/google/googletest TAG
-                       v1.13.0 AUTO)
-endif()
+# ==============================================================================
+# fetch external content
+include(FetchContent)
+# ------------------------------------------------------------------------------
+# cmake_tools
+FetchContent_Declare(
+  cmake_tools
+  GIT_REPOSITORY https://github.com/rlalik/cmake_tools
+  GIT_TAG master)
+
+FetchContent_MakeAvailable(cmake_tools)
+list(APPEND CMAKE_MODULE_PATH ${cmake_tools_SOURCE_DIR})
+include(find_or_fetch_package)
+
+find_or_fetch_package(GTest https://github.com/google/googletest GIT_TAG main AUTO)
+include(GoogleTest)
 
 # configure_file(tests_config.h.in tests_config.h)
 

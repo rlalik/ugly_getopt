@@ -11,30 +11,6 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 include(GNUInstallDirs)
 
 # ==============================================================================
-# fetch external content
-include(FetchContent)
-# ------------------------------------------------------------------------------
-# cmake_tools
-FetchContent_Declare(
-  cmake_tools
-  GIT_REPOSITORY https://github.com/rlalik/cmake_tools
-  GIT_TAG master)
-
-if(CMAKE_VERSION VERSION_LESS 3.14)
-  FetchContent_GetProperties(cmake_tools)
-  if(NOT cmake_tools_POPULATED)
-    FetchContent_Populate(cmake_tools)
-    add_subdirectory(${cmake_tools_SOURCE_DIR} ${cmake_tools_BINARY_DIR})
-  endif()
-else()
-  FetchContent_MakeAvailable(cmake_tools)
-endif()
-
-list(APPEND CMAKE_MODULE_PATH ${cmake_tools_SOURCE_DIR})
-include(check_3rd_party_tool)
-
-# ==============================================================================
-# build project
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 add_library(ugly_getopt INTERFACE)
