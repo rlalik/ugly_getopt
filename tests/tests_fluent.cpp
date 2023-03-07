@@ -5,27 +5,34 @@
 #include <memory> // for allocator, make_unique
 #include <string> // for operator+, string
 
-class tests_input_params : public ::testing::Test
+class tests_fluent : public ::testing::Test
 {
 protected:
     void SetUp() override {}
     void TearDown() override {}
 };
 
-static int code = 0;
-static int result = 0;
-
-inline void handler_function(int c, const char* optarg)
+TEST_F(tests_fluent, handler_function)
 {
-    code = c;
-    if (optarg) result = atoi(optarg);
-}
+    int code = 0;
+    int result = 0;
 
-TEST_F(tests_input_params, handler_function)
-{
+    auto handler = [&](auto c, auto optarg)
+    {
+        code = c;
+        if (optarg) result = atoi(optarg);
+    };
+
+    int use_cction;
     ugly_getopt ugly;
-    ugly.add_option("action", optional_argument, 0, 'a', handler_function, "Action", "action");
-    ugly.add_option("bction", required_argument, 0, 'b', handler_function, "Bction", "bction");
+    ugly.add_option("action", optional_argument, 0, 'a').set_handler(handler);
+    ugly.add_option("bction", required_argument, 0, 'b')
+        .set_handler(handler)
+        .set_option_description("Bction")
+        .set_value_description("bction");
+    ugly.add_option("cction", required_argument, &use_cction, 'b')
+        .set_option_description("Cction")
+        .set_value_description("cction");
 
     optind = 0;
     code = 0;

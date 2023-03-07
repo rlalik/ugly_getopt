@@ -24,6 +24,33 @@ public:
     using arguments_handler = std::function<bool(const char*)>;
     using multiple_arguments_handler = std::function<bool(int, char* const*, int)>;
 
+    struct full_option
+    {
+        std::string name;
+        int has_arg;
+        int* flag;
+        int val;
+        option_handler handler; // function to handle the option
+        std::string val_desc;   // describe value kind
+        std::string opt_desc;   // describe option
+
+        auto set_handler(option_handler h) -> full_option&
+        {
+            handler = std::move(h);
+            return *this;
+        }
+        auto set_value_description(std::string d) -> full_option&
+        {
+            val_desc = std::move(d);
+            return *this;
+        }
+        auto set_option_description(std::string d) -> full_option&
+        {
+            opt_desc = std::move(d);
+            return *this;
+        }
+    };
+
     inline auto usage(char** argv) -> void;
 
     /**
@@ -34,26 +61,24 @@ public:
      * \param val option value
      * \param description description of the option
      */
-    inline auto add_option(std::string name, int has_arg, int* flag, int val, option_handler handler,
-                    std::string opt_desc = {}, std::string val_desc = "value") -> void;
+    inline auto add_option(std::string name, int has_arg, int* flag, int val,
+                           option_handler handler, std::string opt_desc = {},
+                           std::string val_desc = "value") -> void;
+
+    inline auto add_option(std::string name, int has_arg, int* flag, int val) -> full_option&;
+    inline auto get_option(std::string name) -> full_option&;
+    inline auto get_option(int val) -> full_option&;
+
     inline auto add_arguments_handler(arguments_handler f) -> void { cmdl_arguments_handler = f; }
-    inline auto add_multiple_arguments_handler(multiple_arguments_handler f) -> void { cmdl_multiple_handler = f; }
+    inline auto add_multiple_arguments_handler(multiple_arguments_handler f) -> void
+    {
+        cmdl_multiple_handler = f;
+    }
 
     inline auto configure(int argc, char* const* argv) -> int;
     inline auto usage(int argc, char** argv) -> void;
 
 private:
-    struct full_option
-    {
-        std::string name;
-        int has_arg;
-        int* flag;
-        int val;
-        option_handler handler; // function to handle the option
-        std::string val_desc;   // describe value kind
-        std::string opt_desc;   // describe option
-    };
-    std::vector<std::string> cmdl_names;
     std::map<int, full_option> cmdl_options;
 
     arguments_handler cmdl_arguments_handler;
@@ -66,6 +91,31 @@ void ugly_getopt::add_option(std::string name, int has_arg, int* flag, int value
     cmdl_options.insert({value,
                          {std::move(name), has_arg, flag, value, std::move(handler),
                           std::move(val_desc), std::move(opt_desc)}});
+}
+
+ugly_getopt::full_option& ugly_getopt::add_option(std::string name, int has_arg, int* flag,
+                                                  int value)
+{
+    cmdl_options.insert({value, {std::move(name), has_arg, flag, value}});
+    return cmdl_options[value];
+}
+
+ugly_getopt::full_option& ugly_getopt::get_option(std::string name)
+{
+    auto result = std::find_if(cmdl_options.begin(), cmdl_options.end(),
+                               [name](auto& opt) { return opt.second.name == name; });
+
+    if (result != cmdl_options.end()) return result->second;
+
+    throw;
+}
+
+ugly_getopt::full_option& ugly_getopt::get_option(int val)
+{
+    auto result = cmdl_options.find(val);
+    if (result != cmdl_options.end()) return result->second;
+
+    throw;
 }
 
 int ugly_getopt::configure(int argc, char* const* argv)
@@ -130,10 +180,13 @@ int ugly_getopt::configure(int argc, char* const* argv)
     return optind;
 }
 
+namespace ugly
+{
 template <class T> struct sort_options
 {
     bool operator()(T& s1, T& s2) const { return s1.long_name < s2.long_name; }
 };
+} // namespace ugly
 
 void ugly_getopt::usage(int argc, char** argv)
 {
@@ -193,7 +246,7 @@ void ugly_getopt::usage(int argc, char** argv)
             names.push_back({0, cmd.name, cmd.val_desc, cmd.opt_desc, has_flags});
     }
 
-    sort_options<full_desc> so;
+    ugly::sort_options<full_desc> so;
     std::sort(names.begin(), names.end(), so);
 
     std::cout << "Usage:  " << argv[0] << " [options] [arguments]\n where options are:\n\n";

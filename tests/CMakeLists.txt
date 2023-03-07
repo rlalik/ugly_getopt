@@ -3,7 +3,9 @@ find_package(GTest)
 # configure_file(tests_config.h.in tests_config.h)
 
 set(tests_SRCS
+    tests_functions.cpp
     tests_input_params.cpp
+    tests_fluent.cpp
 )
 
 add_executable(
