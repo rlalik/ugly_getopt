@@ -1,12 +1,3 @@
-# Ugly Getopt
-
-This is a simple and not so pretty c++ overlay for GNU GetOpt (https://www.gnu.org/software/libc/manual/html_node/Getopt.html)
-
-## Usage
-
-See example for details.
-
-```c++
 #include "ugly_getopt.h"
 #include <fmt/core.h>
 
@@ -52,28 +43,3 @@ int main(int argc, char** argv)
     // step 5 -- process remaining arguments
     ugly.process_arguments([&](const char* arg) { fmt::print("Extra argument: {}\n", arg); });
 }
-```
-#### Result
-```bash
-$ examples/example_readme --action1 --action2=abc --action3 789 qwe rty
-Action1
-Action2 = abc
-Action3 = 789
-Extra argument: qwe
-Extra argument: rty
-$ example/basic_usage --help
-Usage:  examples/example_readme [options] [arguments]
- where options are:
-
-    --some          : Set some flag
-    -a, --action1   : Action 1
-    --action2[={}]  : Action 2
-    --action3[=]{}  : Action 3
-    -h, --help      : Print help
-
-```
-### Steps
-1. Create an `ugly::getopt::parser` object:
-1. Add getopt-like options using getopt-like structure:
-1. Create function handler for the options:
-1. Call `configure` function.

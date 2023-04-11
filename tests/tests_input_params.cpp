@@ -2,9 +2,6 @@
 
 #include "ugly_getopt.h"
 
-#include <memory> // for allocator, make_unique
-#include <string> // for operator+, string
-
 class tests_input_params : public ::testing::Test
 {
 protected:
@@ -12,48 +9,50 @@ protected:
     void TearDown() override {}
 };
 
-static int code = 0;
 static int result = 0;
 
-inline void handler_function(int c, const char* optarg)
+inline void handler_function(const char* optarg)
 {
-    code = c;
     if (optarg) result = atoi(optarg);
 }
 
 TEST_F(tests_input_params, handler_function)
 {
-    ugly_getopt ugly;
-    ugly.add_option("action", optional_argument, 0, 'a', handler_function, "Action", "action");
-    ugly.add_option("bction", required_argument, 0, 'b', handler_function, "Bction", "bction");
+    ugly::getopt::parser ugly;
+    ugly.add_option("action", 'a', ugly::getopt::ArgumentType::Optional)
+        .set_handler(handler_function)
+        .set_option_description("A-action")
+        .set_value_description("action");
+    ugly.add_option("bction", 'b', ugly::getopt::ArgumentType::Required)
+        .set_handler(handler_function)
+        .set_option_description("B-action")
+        .set_value_description("bction");
 
-    optind = 0;
-    code = 0;
     result = 0;
     {
-        char* const argv[] = {"test_app", "--action=123", "123"};
+        char* const argv[] = {"test_app1", "--action=123", "123"};
         ugly.configure(3, argv);
-        ASSERT_EQ(code, 'a');
         ASSERT_EQ(result, 123);
     }
 
-    optind = 0;
-    code = 0;
     result = 0;
     {
-        char* const argv[] = {"test_app", "-a123"};
-        ugly.configure(3, argv);
-        ASSERT_EQ(code, 'a');
+        char* const argv[] = {"test_app2", "-a123"};
+        ugly.configure(2, argv);
         ASSERT_EQ(result, 123);
     }
 
-    optind = 0;
-    code = 0;
     result = 0;
     {
-        char* const argv[] = {"test_app", "-b", "321"};
+        char* const argv[] = {"test_app3", "-b", "321"};
         ugly.configure(3, argv);
-        ASSERT_EQ(code, 'b');
+        ASSERT_EQ(result, 321);
+    }
+
+    result = 0;
+    {
+        char* const argv[] = {"test_app4", "-b321"};
+        ugly.configure(2, argv);
         ASSERT_EQ(result, 321);
     }
 }

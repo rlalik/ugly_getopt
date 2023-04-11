@@ -1,8 +1,7 @@
 # ==============================================================================
 # fetch external content
 include(FetchContent)
-# ------------------------------------------------------------------------------
-# cmake_tools
+
 FetchContent_Declare(
   cmake_tools
   GIT_REPOSITORY https://github.com/rlalik/cmake_tools
@@ -20,19 +19,20 @@ endif()
 list(APPEND CMAKE_MODULE_PATH ${cmake_tools_SOURCE_DIR})
 include(find_or_fetch_package)
 
-find_or_fetch_package(cmake-scripts https://github.com/StableCoder/cmake-scripts GIT_TAG main AUTO)
-list(APPEND CMAKE_MODULE_PATH ${cmake-scripts_SOURCE_DIR})
-
-# include(c++-standards)
-include(code-coverage)
-include(sanitizers)
-# include(doxygen)
-# include(formatting)
-# include(tools)
-# ==============================================================================
+set(FMT_INSTALL OFF)
+# cmake-format: off
+find_or_fetch_package(fmt https://github.com/fmtlib/fmt
+  GIT_TAG master AUTO)
+# cmake-format: on
 
 add_executable(basic_usage basic_usage.cpp)
-target_link_libraries(basic_usage ugly_getopt::ugly_getopt)
+target_link_libraries(basic_usage ugly::getopt fmt::fmt)
 
 add_executable(fluent_usage fluent_usage.cpp)
-target_link_libraries(fluent_usage ugly_getopt::ugly_getopt)
+target_link_libraries(fluent_usage ugly::getopt fmt::fmt)
+
+add_executable(full_usage full_usage.cpp)
+target_link_libraries(full_usage ugly::getopt fmt::fmt)
+
+add_executable(example_readme example_readme.cpp)
+target_link_libraries(example_readme ugly::getopt fmt::fmt)

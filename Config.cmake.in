@@ -2,4 +2,6 @@
 
 include("${CMAKE_CURRENT_LIST_DIR}/ugly_getopt-targets.cmake")
 
+find_package(fmt)
+
 check_required_components(ugly_getopt)

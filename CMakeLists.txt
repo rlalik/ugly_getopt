@@ -1,39 +1,37 @@
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.13...3.26)
+
 project(
   ugly_getopt
-  VERSION 0.0.5
+  VERSION 0.1.1
   LANGUAGES C CXX)
+
+include(GNUInstallDirs)
 
 option(UGLY_ENABLE_TESTING "Enable tests" OFF)
 option(UGLY_BUILD_EXAMPLES "Build examples" OFF)
 
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
-
-include(GNUInstallDirs)
-
-# ==============================================================================
-
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 add_library(ugly_getopt INTERFACE)
-add_library(ugly_getopt::ugly_getopt ALIAS ugly_getopt)
+add_library(ugly::getopt ALIAS ugly_getopt)
 
 if(CMAKE_VERSION VERSION_LESS 3.14)
   set_target_properties(
     ugly_getopt
     PROPERTIES INTERFACE_VERSION ${PROJECT_VERSION}
-              INTERFACE_SOVERSION ${PROJECT_VERSION_MAJOR}
-              INTERFACE_PUBLIC_HEADER "ugly_getopt.h")
+               INTERFACE_SOVERSION ${PROJECT_VERSION_MAJOR}
+               INTERFACE_PUBLIC_HEADER "include/ugly_getopt.h")
 else()
   set_target_properties(
     ugly_getopt
     PROPERTIES VERSION ${PROJECT_VERSION}
-              SOVERSION ${PROJECT_VERSION_MAJOR}
-              PUBLIC_HEADER "ugly_getopt.h")
+               SOVERSION ${PROJECT_VERSION_MAJOR}
+               PUBLIC_HEADER "include/ugly_getopt.h")
 endif()
 
 target_include_directories(
-  ugly_getopt INTERFACE "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
-                        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>")
+  ugly_getopt
+  INTERFACE "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+            "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>")
 
 # installing
 
@@ -57,7 +55,7 @@ export(PACKAGE ugly_getopt)
 install(
   EXPORT ugly_getopt_Targets
   DESTINATION "${ugly_getopt_INSTALL_CMAKEDIR}"
-  NAMESPACE ugly_getopt::
+  NAMESPACE ugly::
   FILE "ugly_getopt-targets.cmake"
   COMPONENT Development)
 
@@ -80,7 +78,7 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/ugly_getoptConfig.cmake
               ${CMAKE_CURRENT_BINARY_DIR}/ugly_getoptConfigVersion.cmake
         DESTINATION ${ugly_getopt_INSTALL_CMAKEDIR})
 
-if (UGLY_BUILD_EXAMPLES)
+if(UGLY_BUILD_EXAMPLES)
   add_subdirectory(examples)
 endif()
 
