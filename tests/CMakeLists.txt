@@ -1,5 +1,7 @@
 option(ENABLE_ADVANCE_TOOLS "Enables advanced tools" OFF)
 
+include(FetchContent)
+
 if(ENABLE_ADVANCE_TOOLS)
   FetchContent_Declare(
     cmake-scripts
@@ -23,16 +25,24 @@ if(ENABLE_ADVANCE_TOOLS)
   include_what_you_use(-Xiwyu;--error_always)
 endif()
 
-set(FMT_INSTALL OFF)
-# cmake-format: off
-find_or_fetch_package(GTest https://github.com/google/googletest
-                      GIT_TAG main
-                      AUTO)
+set(INSTALL_GTEST OFF)
+FetchContent_Declare(
+  GTest
+  GIT_REPOSITORY https://github.com/google/googletest
+  GIT_TAG v1.14.0
+  FIND_PACKAGE_ARGS 1.14.0 NAMES GTest
+)
+FetchContent_MakeAvailable(GTest)
 
-find_or_fetch_package(fmt https://github.com/fmtlib/fmt
-                      GIT_TAG master
-                      AUTO)
-# cmake-format: on
+set(FMT_INSTALL OFF)
+FetchContent_Declare(
+  fmt
+  GIT_REPOSITORY https://github.com/fmtlib/fmt
+  GIT_TAG 10.1.1
+  FIND_PACKAGE_ARGS 10.1.1
+)
+FetchContent_MakeAvailable(fmt)
+
 include(GoogleTest)
 
 set(tests_SRCS tests_parser_option.cpp tests_input_params.cpp tests_fluent.cpp)

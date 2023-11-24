@@ -24,7 +24,7 @@ jobs:
         build_type: [ Release ]
         cxx_standard: [ 11, 14, 17, 20, 23 ]
         compiler: [ gcc-latest, clang-latest ]
-        cmake-version: [ 3.13, '' ]
+        cmake-version: [ 3.24, '' ]
 
     steps:
       - name: Print env
