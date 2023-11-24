@@ -7,7 +7,7 @@ This is a simple and not so pretty c++ overlay for GNU GetOpt (https://www.gnu.o
 See example for details.
 
 ```c++
-#include "ugly_getopt.h"
+#include "ugly_getopt/ugly_getopt.h"
 #include <fmt/core.h>
 
 void config_handler_1(const char*) { fmt::print("Action1\n"); }
@@ -55,7 +55,7 @@ int main(int argc, char** argv)
 ```
 #### Result
 ```bash
-$ examples/example_readme --action1 --action2=abc --action3 789 qwe rty
+$ example/example_readme --action1 --action2=abc --action3 789 qwe rty
 Action1
 Action2 = abc
 Action3 = 789
@@ -77,3 +77,17 @@ Usage:  examples/example_readme [options] [arguments]
 1. Add getopt-like options using getopt-like structure:
 1. Create function handler for the options:
 1. Call `configure` function.
+
+# Building and installing
+
+See the [BUILDING](BUILDING.md) document.
+
+# Contributing
+
+See the [CONTRIBUTING](CONTRIBUTING.md) document.
+
+# Licensing
+
+Creative Commons Legal Code
+
+See the [LICENSE](LICENSE) document.

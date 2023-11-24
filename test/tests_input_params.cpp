@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "ugly_getopt.h"
+#include "ugly_getopt/ugly_getopt.hpp"
 
 class tests_input_params : public ::testing::Test
 {

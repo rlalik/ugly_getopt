@@ -4,10 +4,12 @@ name: Compiler and standards checks
 # Controls when the action will run. Triggers the workflow on push
 on:
   push:
+    branches:
+    - master
+
   pull_request:
-  release:
-    # tags:
-    # - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+    branches:
+    - master
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -55,8 +57,8 @@ jobs:
           cmake \
             -S . \
             -B build \
-            -DUGLY_ENABLE_TESTING=On \
-            -DUGLY_BUILD_EXAMPLES=On \
+            -Wno-error=dev \
+            -Dugly_getopt_DEVELOPER_MODE=On \
             -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
             -DCMAKE_INSTALL_PREFIX:PATH=instdir \
             -DCMAKE_CXX_STANDARD=${{ matrix.cxx_standard }}

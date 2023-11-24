@@ -1,4 +1,4 @@
-#include "ugly_getopt.h"
+#include "ugly_getopt/ugly_getopt.hpp"
 
 void config_handler_1(const char* optarg)
 {
