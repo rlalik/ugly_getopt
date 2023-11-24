@@ -2,13 +2,14 @@ cmake_minimum_required(VERSION 3.13...3.26)
 
 project(
   ugly_getopt
-  VERSION 0.1.1
-  LANGUAGES C CXX)
+  VERSION 0.1.2
+  LANGUAGES CXX)
 
 include(GNUInstallDirs)
 
 option(UGLY_ENABLE_TESTING "Enable tests" OFF)
 option(UGLY_BUILD_EXAMPLES "Build examples" OFF)
+option(UGLY_INSTALL "Enable installation of ugly_getopt. (Projects embedding ugly_getopt may want to turn this OFF.)" ON)
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 add_library(ugly_getopt INTERFACE)
@@ -41,28 +42,9 @@ if(NOT DEFINED ugly_getopt_INSTALL_CMAKEDIR)
       CACHE STRING "Path to ugly_getopt CMake files")
 endif()
 
-install(
-  TARGETS ugly_getopt
-  EXPORT ugly_getopt_Targets
-  INCLUDES
-  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-  PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} COMPONENT Development)
-
 # Export the package for use from the build-tree (this registers the build-tree
 # with a global CMake-registry)
 export(PACKAGE ugly_getopt)
-
-install(
-  EXPORT ugly_getopt_Targets
-  DESTINATION "${ugly_getopt_INSTALL_CMAKEDIR}"
-  NAMESPACE ugly::
-  FILE "ugly_getopt-targets.cmake"
-  COMPONENT Development)
-
-# generate the export targets for the build tree needs to be after the
-# install(TARGETS ) command
-export(EXPORT ugly_getopt_Targets
-       FILE "${CMAKE_CURRENT_BINARY_DIR}/ugly_getopt-targets.cmake")
 
 include(CMakePackageConfigHelpers)
 
@@ -74,9 +56,26 @@ configure_package_config_file(
 write_basic_package_version_file(ugly_getoptConfigVersion.cmake
                                  COMPATIBILITY SameMajorVersion)
 
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/ugly_getoptConfig.cmake
-              ${CMAKE_CURRENT_BINARY_DIR}/ugly_getoptConfigVersion.cmake
-        DESTINATION ${ugly_getopt_INSTALL_CMAKEDIR})
+if (UGLY_INSTALL)
+  install(
+    TARGETS ugly_getopt
+    EXPORT ugly_getopt_Targets
+    INCLUDES
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} COMPONENT Development)
+
+  install(
+    EXPORT ugly_getopt_Targets
+    DESTINATION "${ugly_getopt_INSTALL_CMAKEDIR}"
+    NAMESPACE ugly::
+    FILE "ugly_getopt-targets.cmake"
+    COMPONENT Development)
+
+  # generate the export targets for the build tree needs to be after the
+  # install(TARGETS ) command
+  export(EXPORT ugly_getopt_Targets
+         FILE "${CMAKE_CURRENT_BINARY_DIR}/ugly_getopt-targets.cmake")
+endif()
 
 if(UGLY_BUILD_EXAMPLES)
   add_subdirectory(examples)
