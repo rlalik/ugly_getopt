@@ -11,71 +11,88 @@ option(UGLY_ENABLE_TESTING "Enable tests" OFF)
 option(UGLY_BUILD_EXAMPLES "Build examples" OFF)
 option(UGLY_INSTALL "Enable installation of ugly_getopt. (Projects embedding ugly_getopt may want to turn this OFF.)" ON)
 
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-add_library(ugly_getopt INTERFACE)
-add_library(ugly::getopt ALIAS ugly_getopt)
+# ---- Declare library ----
 
-if(CMAKE_VERSION VERSION_LESS 3.14)
-  set_target_properties(
-    ugly_getopt
-    PROPERTIES INTERFACE_VERSION ${PROJECT_VERSION}
-               INTERFACE_SOVERSION ${PROJECT_VERSION_MAJOR}
-               INTERFACE_PUBLIC_HEADER "include/ugly_getopt.h")
-else()
-  set_target_properties(
-    ugly_getopt
-    PROPERTIES VERSION ${PROJECT_VERSION}
-               SOVERSION ${PROJECT_VERSION_MAJOR}
-               PUBLIC_HEADER "include/ugly_getopt.h")
-endif()
+add_library(ugly__getopt INTERFACE)
+add_library(ugly::getopt ALIAS ugly__getopt)
+
+target_link_libraries(ugly__getopt INTERFACE $<BUILD_INTERFACE:fmt::fmt>)
+# target_link_libraries(ugly__getopt INTERFACE fmt::fmt)
+
+set_property(
+    TARGET ugly__getopt PROPERTY
+    EXPORT_NAME ugly_getopt
+)
+
+set_target_properties(
+  ugly__getopt
+  PROPERTIES VERSION ${PROJECT_VERSION}
+             SOVERSION ${PROJECT_VERSION_MAJOR})
 
 target_include_directories(
-  ugly_getopt
+  ugly__getopt
   INTERFACE "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
-            "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>")
+            "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>")
 
-# installing
+# ---- Install rules ----
 
-if(NOT DEFINED ugly_getopt_INSTALL_CMAKEDIR)
-  set(ugly_getopt_INSTALL_CMAKEDIR
-      "${CMAKE_INSTALL_LIBDIR}/cmake/ugly_getopt"
-      CACHE STRING "Path to ugly_getopt CMake files")
+include(CMakePackageConfigHelpers)
+include(GNUInstallDirs)
+
+set(package ugly_getopt)
+
+# Allow package maintainers to freely override the path for the configs
+set(
+    ugly_getopt_INSTALL_CMAKEDIR "${CMAKE_INSTALL_DATADIR}/${package}"
+    CACHE PATH "CMake package config location relative to the install prefix"
+)
+mark_as_advanced(promille_INSTALL_CMAKEDIR)
+
+configure_package_config_file(
+  ${PROJECT_SOURCE_DIR}/Config.cmake.in
+  ${PROJECT_BINARY_DIR}/ugly_getoptConfig.cmake
+  INSTALL_DESTINATION ${ugly_getopt_INSTALL_CMAKEDIR})
+
+write_basic_package_version_file(ugly_getoptConfigVersion.cmake
+                             COMPATIBILITY SameMajorVersion
+                             ARCH_INDEPENDENT)
+
+if (UGLY_INSTALL)
+  install(
+    DIRECTORY include/
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+    COMPONENT ugly_getopt_Development
+  )
+
+  install(
+    TARGETS ugly__getopt
+    EXPORT ugly_getopt_Targets
+    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+  install(
+    FILES "${PROJECT_BINARY_DIR}/ugly_getoptConfig.cmake"
+    DESTINATION "${ugly_getopt_INSTALL_CMAKEDIR}"
+    COMPONENT ugly_getopt_Development
+  )
+
+  install(
+    EXPORT ugly_getopt_Targets
+    NAMESPACE ugly::
+    DESTINATION "${ugly_getopt_INSTALL_CMAKEDIR}"
+    FILE "ugly_getopt-targets.cmake"
+    COMPONENT ugly_getopt_Development)
+
+  # generate the export targets for the build tree needs to be after the
+  # install(TARGETS ) command
+  # export(EXPORT ugly_getopt_Targets
+         # FILE "${PROJECT_BINARY_DIR}/ugly_getopt-targets.cmake")
 endif()
 
 # Export the package for use from the build-tree (this registers the build-tree
 # with a global CMake-registry)
-export(PACKAGE ugly_getopt)
+# export(PACKAGE ugly_getopt)
 
-include(CMakePackageConfigHelpers)
-
-configure_package_config_file(
-  ${CMAKE_CURRENT_SOURCE_DIR}/Config.cmake.in
-  ${CMAKE_CURRENT_BINARY_DIR}/ugly_getoptConfig.cmake
-  INSTALL_DESTINATION ${ugly_getopt_INSTALL_CMAKEDIR})
-
-write_basic_package_version_file(ugly_getoptConfigVersion.cmake
-                                 COMPATIBILITY SameMajorVersion)
-
-if (UGLY_INSTALL)
-  install(
-    TARGETS ugly_getopt
-    EXPORT ugly_getopt_Targets
-    INCLUDES
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} COMPONENT Development)
-
-  install(
-    EXPORT ugly_getopt_Targets
-    DESTINATION "${ugly_getopt_INSTALL_CMAKEDIR}"
-    NAMESPACE ugly::
-    FILE "ugly_getopt-targets.cmake"
-    COMPONENT Development)
-
-  # generate the export targets for the build tree needs to be after the
-  # install(TARGETS ) command
-  export(EXPORT ugly_getopt_Targets
-         FILE "${CMAKE_CURRENT_BINARY_DIR}/ugly_getopt-targets.cmake")
-endif()
+# ---- Examples ----
 
 if(UGLY_BUILD_EXAMPLES)
   add_subdirectory(examples)

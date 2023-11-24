@@ -1,7 +1,4 @@
-@PACKAGE_INIT@
-
 include("${CMAKE_CURRENT_LIST_DIR}/ugly_getopt-targets.cmake")
 
-find_package(fmt 10.1.1)
-
-check_required_components(ugly_getopt)
+include(CMakeFindDependencyMacro)
+find_dependency(fmt 10.1.1)
