@@ -1,4 +1,4 @@
-#include "ugly_getopt.h"
+#include "ugly_getopt/ugly_getopt.h"
 
 struct some
 {

@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "ugly_getopt.h"
+#include "ugly_getopt/ugly_getopt.h"
 
 using ugly::getopt::ArgumentType;
 using ugly::getopt::FlagAction;

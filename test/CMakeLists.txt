@@ -1,29 +1,18 @@
-option(ENABLE_ADVANCE_TOOLS "Enables advanced tools" OFF)
+cmake_minimum_required(VERSION 3.24)
+
+project(ugly_getoptTests LANGUAGES CXX)
+
+include(../cmake/project-is-top-level.cmake)
+include(../cmake/folders.cmake)
+
+# ---- Dependencies ----
+
+if(PROJECT_IS_TOP_LEVEL)
+  find_package(ugly_getopt REQUIRED)
+  enable_testing()
+endif()
 
 include(FetchContent)
-
-if(ENABLE_ADVANCE_TOOLS)
-  FetchContent_Declare(
-    cmake-scripts
-    GIT_REPOSITORY https://github.com/StableCoder/cmake-scripts
-    GIT_TAG main)
-  FetchContent_GetProperties(cmake-scripts)
-  if(NOT cmake-scripts_POPULATED)
-    FetchContent_Populate(cmake-scripts)
-    list(APPEND CMAKE_MODULE_PATH ${cmake-scripts_SOURCE_DIR})
-    message(STATUS "${cmake-scripts_SOURCE_DIR}")
-  endif()
-
-  list(APPEND CMAKE_MODULE_PATH ${cmake-scripts_SOURCE_DIR})
-
-  include(sanitizers)
-
-  include(code-coverage)
-  add_code_coverage()
-
-  include(tools)
-  include_what_you_use(-Xiwyu;--error_always)
-endif()
 
 set(INSTALL_GTEST OFF)
 FetchContent_Declare(
@@ -60,8 +49,8 @@ endif()
 target_link_libraries(gtests PRIVATE ${GTEST_TRG} ugly::getopt fmt::fmt)
 target_compile_options(gtests PUBLIC -Wno-write-strings)
 
-if(ENABLE_ADVANCE_TOOLS)
-  target_code_coverage(gtests)
-endif()
-
 gtest_discover_tests(gtests)
+
+# ---- End-of-file commands ----
+
+add_folders(Test)

@@ -1,4 +1,4 @@
-#include "ugly_getopt.h"
+#include "ugly_getopt/ugly_getopt.h"
 #include <fmt/core.h>
 
 void config_handler_1(const char*) { fmt::print("Action1\n"); }
